@@ -150,6 +150,11 @@ public:
 
     // Globals data
     GlobalsInfo global_data;
+
+    void set_split_slice_mode(bool mode);
+
+private:
+    bool split_slice_flag = false; // for routing graph gen
 };
 
 ChipDelta operator-(const Chip &a, const Chip &b);

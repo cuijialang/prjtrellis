@@ -107,6 +107,11 @@ ChipDelta operator-(const Chip &a, const Chip &b)
     return delta;
 }
 
+void Chip::set_split_slice_mode(bool mode)
+{
+    split_slice_flag = mode;
+}
+
 shared_ptr<RoutingGraph> Chip::get_routing_graph()
 {
     shared_ptr<RoutingGraph> rg(new RoutingGraph(*this));
@@ -120,8 +125,16 @@ shared_ptr<RoutingGraph> Chip::get_routing_graph()
         tie(y, x) = tile->info.get_row_col();
         // SLICE Bels
         if (tile->info.type == "PLC2") {
-            for (int z = 0; z < 4; z++)
-                Bels::add_lc(*rg, x, y, z);
+            if (split_slice_flag) {
+                for (int z = 0; z < 8; z++) {
+                    Bels::add_logic_comb(*rg, x, y, z);
+                    Bels::add_ff(*rg, x, y, z);
+                }
+                Bels::add_ramw(*rg, x, y);
+            } else {
+                for (int z = 0; z < 4; z++)
+                    Bels::add_lc(*rg, x, y, z);
+            }
         }
         // PIO Bels
         if (tile->info.type.find("PICL0") != string::npos || tile->info.type.find("PICR0") != string::npos)
